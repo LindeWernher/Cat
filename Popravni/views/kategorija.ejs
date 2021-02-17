@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kategorije</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"></script>
+</head>
+<body>
+    <ul>
+        <% kategorija.forEach(k=>{ %>
+            <li id="<%=k.naziv%>"><%= k.naziv %>  <button onclick="obrisi('<%= k.naziv%>')">OBRISI!</button></li>
+        <% }); %>
+    </ul>
+
+    <form>
+        <div class="form-group">
+            <label>Naziv kategorije</label>
+            <input type="text" class="form-control" id="naziv" >
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+<script>
+    $('form').submit( function (e) {
+        e.preventDefault();
+        let naziv = $('#naziv').val();
+        $.ajax({
+            method: 'POST',
+            url: '/kategorije',
+            data: {naziv},
+            success: function (data) {
+                $('ul').append(`<li id="${data.naziv}">${data.naziv} <button onclick="obrisi('${data.naziv}')">OBRISI</button></li>`);
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        })
+    });
+
+    function obrisi(naziv){
+        if(naziv!='nepoznato') {
+            $.ajax({
+                method: 'DELETE',
+                url: '/kategorije/' + naziv,
+                success: function (data) {
+                    $('#' + naziv).remove();
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            })
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Komentari</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+<body>
+    <div class="w3-container">
+        <h2>W3.CSS Modal</h2>
+
+
+        <div id="id01" class="w3-modal">
+            <div class="w3-modal-content">
+                <div class="w3-container">
+                    <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                    <form id="podKomentar">
+                        <div class="form-group">
+                            <label>Novi podkomentar</label>
+                            <input style="color: black" type="text" class="form-control" id="komentar" name="komentar">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div>
+        <p>Autor: <input type="text" id="autor"></p>
+        <p>Tekst: <input type="text" id="novikomentar"></p>
+        <button onclick="noviKomentar()">Novi</button>
+    </div>
+    
+    <ul>
+        <% komentar.forEach(k=>{%>
+            <li>  <%= k.autor%> <%= k.tekst%>
+                <div class="<%= k._id  %>">
+
+                </div>
+                <button onclick="prikaziKomentare('<%= k._id %>')">Prikazi komentare</button>
+                <button onclick="dodajPodkomentar('<%= k._id %>')" class="w3-button w3-black">Open Modal</button>
+            </li>
+
+        <%});%>
+    </ul>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io('http://localhost:3000');
+        var trenutniKomentarId;
+
+        function noviKomentar() {
+            let autor = $("#autor").val();
+            let komentar = $("#novikomentar").val();
+
+            socket.emit('novi komentar', {
+                autor,
+                komentar,
+                id: '<%= id %>'
+            });
+
+            socket.on('komentar dodan', function (k) {
+                $("ul").append(`<li>${k.autor} ${k.tekst} <button onclick="prikaziKomentare('${k._id}')">Prikazi komentare</button>  <button onclick="dodajPodkomentar('${k._id}')" class="w3-button w3-black">Open Modal</button>
+                </li>`)
+            })
+        }
+
+        function dodajPodkomentar(id) {
+            trenutniKomentarId = id;
+            document.getElementById('id01').style.display='block';
+        }
+
+        $("#podKomentar").submit(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                method: "POST",
+                url: '/komentar/' + trenutniKomentarId + '/dodajPodkomentar',
+                data: {
+                    komentar: $("#komentar").val(),
+                    autor: $("#autor").val(),
+                },
+                success: function (data, status) {
+                    console.log(data.pk)
+                    data.pk.forEach(d => {
+                        $(".ovdje").append(`<p>${d.autor}, ${d.komentar}</p>`)
+                    });
+                },
+                error: function (err) {
+                    console.log(err)
+                }
+            })
+
+            console.log(trenutniKomentarId);
+        })
+
+        function prikaziKomentare(id) {
+            trenutniKomentarId = id;
+            $.ajax({
+                method: "GET",
+                url: "/komentar/" + id + '/podKomentari',
+                success: function (data, status) {
+                    console.log(data.pk);
+                    data.pk.forEach(d => {
+                        $("." + id).append(`<p>${d.autor}: ${d.tekst}</p>`)
+                    });
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            })
+        }
+    </script>
+
+</body>
+</html>

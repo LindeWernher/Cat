@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teme</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"></script>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>Naziv</th>
+            <th>Opis</th>
+            <th>Kategorija</th>
+            <th>Komentar</th>
+        </tr>
+        <% tema.forEach(t=>{%>
+            <tr>
+                <td><%= t.naziv%></td>
+                <td><%= t.opis%></td>
+                <td> <%= t.kategorija%></td>
+                <td><button onclick="dodajKomentar('<%=t._id%>')">DODAJ KOMENTAR!</button></td>
+            </tr>
+        <% });%>
+    </table>
+
+    <form>
+        <div class="form-group">
+            <label>Naziv teme</label>
+            <input type="text" class="form-control" id="naziv" >
+        </div>
+        <div class="form-group">
+            <label>Kratki opis</label>
+            <input type="text" class="form-control" id="opis" >
+        </div>
+        <div>
+            <select id="kategorija">
+                <% kategorija.forEach(k=>{%>
+                    <option value="<%=k._id%>"> <%=k.naziv%></option>
+                <% });%>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <script>
+        function dodajKomentar(id) {
+            location.href = `/komentar/${id}`;
+        }
+        $('form').on('submit',function (e) {
+            e.preventDefault();
+            var naziv = document.getElementById('naziv').value;
+            var opis = document.getElementById('opis').value;
+            var kategorija = document.getElementById('kategorija').value;
+            $.ajax({
+                method:'POST',
+                url:'/teme',
+                data: {naziv,opis,kategorija},
+                success: function (data) {
+                    $('table').append(`<tr> <td>${data.naziv} </td>  <td> ${data.opis} </td> <td> ${data.kategorija}</td>
+                   <td><button onclick="dodajKomentar(${data._id})">DODAJ KOMENTAR!</button></td> </tr>`)
+                }
+            })
+        })
+    </script>
+
+</body>
+</html>
